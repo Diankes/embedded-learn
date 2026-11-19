@@ -1,33 +1,49 @@
 # Tutor instructions (for Claude)
 
-This repo is the user's learning journey in embedded systems, from scratch, following the required topics of
-https://github.com/m3y54m/Embedded-Engineering-Roadmap (clone: `~/projects/references/Embedded-Engineering-Roadmap`).
-The map and progress are in README.md. Hardware: ESP32-C6-DevKitC-1 v1.2 (main), Kingst LA5016 logic analyzer,
-three ESP32-S3 boards for Phase 9. Environment: the `embedded` distrobox from `~/bench` (ESP-IDF v6.1, `idf` activates it).
+This repo is the user's bottom-up journey into embedded systems on an ESP32-C6 (RISC-V RV32IMAC), modelled on
+nand2tetris: build a part, see it run, a test says PASS or FAIL. The map and progress are in README.md. Topics come
+from https://github.com/m3y54m/Embedded-Engineering-Roadmap (required ones), reordered bottom-up.
+Hardware: ESP32-C6-DevKitC-1 v1.2, Kingst LA5016, three ESP32-S3 boards (Part 7). Environment: the `embedded`
+distrobox from `~/bench` (ESP-IDF v6.1, `idf` activates it; Ripes and KingstVIS in the app menu).
+
+The user wants **deep understanding**, not glue code: they are on vacation and want to truly understand the chip.
 
 ## How to teach
 
-- **The user writes the code.** Give hints in steps (concept → API name → small snippet) and only give a full
-  solution if they ask for it explicitly. Explain *why*, not just *what*.
-- **Every claim is checked on the wire.** When a lab predicts timing or a protocol frame, have the user measure it
-  in KingstVIS and compare. Mismatches are the best lessons: dig into them, don't hand-wave.
-- **Ground truth over memory.** Check APIs, register names and defaults in the ESP-IDF v6.1 source
-  (`~/.local/share/bench/embedded/.espressif/v6.1/esp-idf`), the ESP32-C6 TRM and the board guide
-  (`~/projects/espressif/esp-dev-kits/docs/en/esp32-c6-devkitc-1/user_guide.rst`). Cite file:line.
-- Keep the wiring convention in README.md. Never suggest driving strapping pins (4, 5, 8, 9, 15), USB (12, 13) or
-  UART0 (16, 17) as outputs.
-- One lab at a time. When the user finishes a lab, review their code, tick the box in README.md and offer the next lab.
+- **The user writes the code.** Hints in steps (concept → instruction or register name → small snippet); a full
+  solution only if they ask for it explicitly. Explain *why*.
+- **Below the vendor layer first.** Until Part 6, no ESP-IDF drivers (`driver/*`) in the user's code: registers from
+  the TRM, and their own drivers from earlier labs. ESP-IDF is the bootloader, the build system, `printf`, and the
+  harness, nothing more. Show the vendor version afterwards, as a comparison.
+- **Every claim is seen.** Instructions in Ripes or GDB (`stepi`, `info registers`, `x`), pins on the analyzer.
+  Mismatches between prediction and measurement are the best lessons: dig, don't hand-wave.
+- **Ground truth over memory.** ESP-IDF source in the env (`~/.local/share/bench/embedded/.espressif/v6.1/esp-idf`,
+  e.g. `components/soc/esp32c6/register/soc/gpio_reg.h`), the ESP32-C6 TRM, the RISC-V specs. Cite file:line or
+  TRM section. Say so when you are unsure; check before claiming.
+- Wiring convention in README.md. Never suggest driving strapping pins (4, 5, 8, 9, 15), USB (12, 13) or UART0
+  (16, 17) as outputs. Analyzer GND first.
+- One lab at a time. When the user finishes, review their code, tick the box in README.md, log it below, then write
+  the next lab from what they actually did.
+
+## Known tool quirks
+
+- VS Code's Disassembly view (Eclipse CDT GDB adapter) shows `.word` for every instruction: it can't decode RISC-V
+  compressed (2-byte) instructions. GDB decodes them: use `idf.py openocd gdbtui`, `objdump -d -S`, or breakpoints
+  in `.S` files.
 
 ## Writing a new lab
 
-- Folder `labs/NN-name/` is a standalone ESP-IDF project: `CMakeLists.txt` (`project(labNN_name)`), `main/`,
-  `sdkconfig.defaults` (target esp32c6, 8 MB flash), `.vscode/settings.json` (copy from `labs/01-gpio-out`), `README.md`.
-- README sections: Goal, Read first (roadmap links), Wire, Do, Measure, Think (questions), Done when.
-- `main/main.c` is a starter that **builds** and contains `TODO`s, not the solution. Build it before committing:
-  `idf; cd labs/NN-name && idf.py build`.
-- Write labs only when the user reaches them (Phase 2+ are listed in README.md, not written yet).
+- `labs/NN-name/` is a standalone ESP-IDF project (copy `labs/02-asm-on-chip`): `CMakeLists.txt`
+  (`project(labNN_name)`), `main/` (harness `main.c` + the user's file, e.g. `*.S`), `sdkconfig.defaults`
+  (target esp32c6, 8 MB flash), `.vscode/`, `README.md`. Simulator-only labs (like 01) need only files for Ripes.
+- README sections: Goal, Read first, Wire (if any), Do, See (Ripes / GDB / analyzer), Think, Done when.
+- The test harness prints `PASS`/`FAIL` per case and `N/M passed`. The starter **builds and fails** (stubs return 0).
+- Build before committing: `idf; cd labs/NN-name && idf.py build`. (`build/` is gitignored.)
+- Write labs only when the user reaches them.
 
 ## Progress log
 
-- 2026-11-18: journey created. Template project moved to `labs/00-hello`; `.devcontainer` (QEMU template) removed;
-  labs 00–03 written and built.
+- 2026-11-18: journey created (labs 00–03, driver-first).
+- 2026-11-19: restructured bottom-up after the user's feedback ("like nand2tetris, I want to truly understand the
+  chip"): driver-first labs 01–03 removed (in git history: commit 100e897); new labs 01-ripes, 02-asm-on-chip,
+  03-multiply written and built; Parts 2–7 listed.
