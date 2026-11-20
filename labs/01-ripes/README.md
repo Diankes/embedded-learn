@@ -27,8 +27,8 @@ ones the C6 runs.
 ## See
 - Editor tab, right side: the **binary** of each instruction. Pick one `addi` and decode it by hand with the
   reference card (opcode, rd, rs1, imm). This is all the CPU ever sees.
-- Tick the C extension on and off and reload: some instructions become 2 bytes (`c.addi`...). Those are the ones VS
-  Code's Disassembly view couldn't decode.
+- Tick the C extension on and off and reload: some instructions become 2 bytes (`c.addi`...). In your C6's
+  `objdump` output, the instructions whose bytes column has only 2 bytes are these.
 
 ## Think
 1. `li`, `la` and `mv` are not real instructions. What do they turn into (Editor tab, right side)? Why does `li`

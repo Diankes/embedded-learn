@@ -21,6 +21,7 @@ FAIL. Then step through your own instructions on the real CPU and watch its regi
    Step over (F10) one instruction at a time. Variables panel → **Registers**: watch `a0`, `a1`, `a2`, `pc`, `ra`.
 2. Same in a terminal, closer to the metal: `idf.py openocd gdbtui` (stop the VS Code debug session first). In GDB:
    ```
+   source ../../tools/gdb-rom-fix.py    # once per session, else x/i shows ".word" (see the script)
    break add3
    continue
    layout split          # your source above, the instructions below

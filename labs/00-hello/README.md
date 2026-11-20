@@ -25,8 +25,9 @@ Only the USB cable to the board's **"USB"** port. No analyzer yet.
    `/<app_main>` and Enter. Each line of your C, with the instructions it became under it: address, the
    instruction's bytes (2 or 4), and the instruction. Don't try to understand them all yet: that's Part 1.
 2. Find `addi sp,sp,-32` at the top of `app_main` and `jal ... <esp_chip_info>`. Guess what each does.
-3. VS Code's Disassembly view shows `.word` for everything on this chip (a bug in its debug adapter: it can't
-   decode 2-byte instructions). The terminal view in step 1 and GDB (Lab 02) show them correctly.
+3. The same, live: put a breakpoint on the first line of `app_main`, "Launch Debug", then right-click in `main.c` →
+   **Open Disassembly View**. Same instructions, plus an arrow at the one the CPU runs next; step with F10/F11.
+   Not more "live" than the file from step 1 (code in flash doesn't change), but it follows the CPU.
 
 ## Think
 1. Three programs ran before `app_main`. Which ones, and which one can you never change?

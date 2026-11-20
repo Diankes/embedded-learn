@@ -4,7 +4,12 @@
     {
       "type": "gdbtarget",
       "request": "attach",
-      "name": "Eclipse CDT GDB Adapter"
+      "name": "Eclipse CDT GDB Adapter",
+      // Runs after ESP-IDF's own GDB commands: makes the Disassembly view show instructions instead of ".word"
+      // (why: see the comment at the top of the script).
+      "target": {
+        "connectCommands": ["source ${workspaceFolder}/../../tools/gdb-rom-fix.py"]
+      }
     }
   ]
 }

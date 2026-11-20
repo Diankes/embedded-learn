@@ -27,9 +27,12 @@ The user wants **deep understanding**, not glue code: they are on vacation and w
 
 ## Known tool quirks
 
-- VS Code's Disassembly view (Eclipse CDT GDB adapter) shows `.word` for every instruction: it can't decode RISC-V
-  compressed (2-byte) instructions. GDB decodes them: use `idf.py openocd gdbtui`, `objdump -d -S`, or breakpoints
-  in `.S` files.
+- GDB showed `.word` for app code (VS Code Disassembly view, `x/i`): ESP-IDF's gdbinit loads the ROM ELF
+  (esp-rom-elfs 20241011, esp32c6_rev0_rom.elf), whose `.eh_frame`/`.eh_frame_hdr` sit at 0x42000000-0x4200f07c,
+  over the app's flash code, so GDB disassembles that range as data. Fixed by `tools/gdb-rom-fix.py` (reloads the
+  ROM ELF with those sections moved), run from each lab's `.vscode/launch.json` `target.connectCommands`. Needs GDB
+  with Python (bench installs libpython3.12t64). New labs: copy `.vscode/` from an existing lab. In a terminal
+  GDB session: `source ../../tools/gdb-rom-fix.py` after connecting.
 
 ## Writing a new lab
 

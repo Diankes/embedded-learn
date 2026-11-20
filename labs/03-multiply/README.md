@@ -16,7 +16,7 @@ multiplier must. Then measure, in CPU cycles, what the C6's hardware multiplier 
 3. Flash until `7/7 passed`. Then read the cycle table.
 
 ## See
-- `stepi` through `mul_soft(6, 5)` in GDB (`idf.py openocd gdbtui`, `break mul_soft`, `continue`, `tui reg general`):
+- `stepi` through `mul_soft(6, 5)` in GDB (`idf.py openocd gdbtui`, `source ../../tools/gdb-rom-fix.py`, `break mul_soft`, `continue`, `tui reg general`):
   watch a, b and the result change, iteration by iteration. It is the paper calculation from step 1.
 - The cycle table on the monitor: plot (on paper) mul_soft cycles against the highest bit set in b.
 

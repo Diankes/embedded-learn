@@ -27,11 +27,11 @@ questions. Stuck? Ask Claude in this repo: it is set up as a tutor (hints first,
    each instruction moves through the pipeline as you click. The real C6 has a similar small in-order pipeline, but
    Espressif doesn't publish its insides, so this is where you see them.
 2. **Inside the real chip: GDB.** Registers, memory, one instruction at a time. In a terminal in the lab folder:
-   `idf`, then `idf.py openocd gdbtui`. In GDB: `layout split` (source + instructions), `tui reg general`
+   `idf`, then `idf.py openocd gdbtui`. In GDB: `source ../../tools/gdb-rom-fix.py` (once), `layout split` (source + instructions), `tui reg general`
    (registers), `stepi` (one instruction), `x/8xw 0x40800000` (memory). Or in VS Code: breakpoints work in `.S`
    files too, and the Variables panel shows registers.
-   (VS Code's *Disassembly view* is broken for this chip: it can't decode RISC-V's 2-byte instructions and shows
-   `.word`. GDB itself decodes them fine.)
+   VS Code's *Disassembly view* (right-click in the source while stopped) works too: the labs' `launch.json` runs
+   [`tools/gdb-rom-fix.py`](tools/gdb-rom-fix.py), without which it shows `.word` for your code (the script says why).
 3. **The pins: the logic analyzer.** KingstVIS (on embedded), from Lab 05 on.
 
 And the always-works view of what the compiler produced, in a terminal:
