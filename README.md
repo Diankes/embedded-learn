@@ -9,6 +9,14 @@ the vendor's.
 Topics follow the required ones of the
 [Embedded Systems Engineering Roadmap](https://github.com/m3y54m/Embedded-Engineering-Roadmap), in a different order.
 
+## How to study (read first)
+
+**[HOW-TO-STUDY.md](HOW-TO-STUDY.md)**: the workflow. Everything (TRM, ESP-IDF source and docs, register headers,
+examples, config options) is local text you search with `rg` and `rgf`; read from the hardware outwards: concept
+from the TRM → run the smallest example → peel it (example → driver → LL → register → TRM page) → rebuild it yourself
+→ watch it run. Plus: what menuconfig / the VS Code "SDK Configuration Editor" / `sdkconfig` really are, traced
+through your own Lab 00.
+
 ## How every lab works (the nand2tetris loop)
 
 | nand2tetris | here |
