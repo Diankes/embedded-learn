@@ -1,0 +1,4 @@
+# The puzzle generator's toolbox: QEMU (runs every snippet for real) and Python. The ESP toolchain, ESP-IDF and
+# the TRM text are mounted read-only from the host at run time (see build.sh), so they stay the user's exact versions.
+FROM docker.io/library/python:3.13-slim
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends qemu-user >/dev/null && rm -rf /var/lib/apt/lists/*

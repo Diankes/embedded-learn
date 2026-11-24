@@ -1,0 +1,743 @@
+<title>C6 Tactics</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: one 680px column, a solder-mask header, puzzles as cards on a pale board; gold = you, violet = your ghost. */
+:root {
+  --bg: #e9eee9; --panel: #fbfcfa; --ink: #13251c; --muted: #58695f; --line: #d0d9d2;
+  --mask: #1d5640; --mask-ink: #eef5f0; --gold: #a87b22; --gold-soft: #f3e6c8;
+  --good: #23824a; --good-soft: #dcf0e3; --bad: #bd3b28; --bad-soft: #f8e0db; --ghost: #6c5bd3; --ghost-soft: #e6e2fb;
+  --code: #0f2219; --code-ink: #d9ecdf;
+  --display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0a1712; --panel: #0f241b; --ink: #e3eee7; --muted: #8ba596; --line: #1f3b2e;
+  --mask: #143d2d; --mask-ink: #e3eee7; --gold: #dcb05a; --gold-soft: #3a2f16;
+  --good: #52c07a; --good-soft: #143322; --bad: #f0705a; --bad-soft: #3a1a14; --ghost: #a497ff; --ghost-soft: #251f45;
+  --code: #06100c; --code-ink: #cfe6d6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0a1712; --panel: #0f241b; --ink: #e3eee7; --muted: #8ba596; --line: #1f3b2e;
+  --mask: #143d2d; --mask-ink: #e3eee7; --gold: #dcb05a; --gold-soft: #3a2f16;
+  --good: #52c07a; --good-soft: #143322; --bad: #f0705a; --bad-soft: #3a1a14; --ghost: #a497ff; --ghost-soft: #251f45;
+  --code: #06100c; --code-ink: #cfe6d6; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--mask) }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--mask); color: var(--mask-ink);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.bar { max-width: 680px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding-block: 10px; flex-wrap: wrap }
+.brand { font: 700 18px/1 var(--display); letter-spacing: .04em; display: flex; align-items: center; gap: 8px; margin-right: auto }
+.brand small { font: 500 11px var(--mono); opacity: .7; letter-spacing: 0 }
+nav { display: flex; gap: 2px }
+nav a { color: var(--mask-ink); text-decoration: none; font: 600 13px var(--display); letter-spacing: .06em; text-transform: uppercase;
+  padding: 6px 10px; border-radius: 6px; opacity: .75 }
+nav a[aria-current="page"] { opacity: 1; background: color-mix(in srgb, var(--mask-ink) 14%, transparent) }
+nav a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px }
+main { max-width: 680px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 18px 48px; display: grid; gap: 16px }
+h2 { font: 600 13px var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 6px 0 0 }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; min-width: 0 }
+.row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap }
+.grow { flex: 1 1 auto; min-width: 0 }
+.muted { color: var(--muted) }
+.num { font-variant-numeric: tabular-nums }
+.big { font: 700 44px/1 var(--display); letter-spacing: .01em }
+.mid { font: 600 22px/1.1 var(--display) }
+.tag { font: 500 11px/1 var(--mono); padding: 4px 7px; border-radius: 4px; background: var(--bg); color: var(--muted); border: 1px solid var(--line); white-space: nowrap }
+.tag.gold { background: var(--gold-soft); color: var(--gold); border-color: transparent }
+.tag.ghost { background: var(--ghost-soft); color: var(--ghost); border-color: transparent }
+button { font: 600 15px var(--body); border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); padding: 10px 14px; cursor: pointer }
+button:hover { border-color: var(--muted) }
+button.primary { background: var(--mask); color: var(--mask-ink); border-color: var(--mask); font-family: var(--display); letter-spacing: .05em; text-transform: uppercase; padding: 14px 18px }
+button.gold { background: var(--gold); color: var(--panel); border-color: var(--gold) }
+button.link { background: none; border: none; color: var(--muted); padding: 4px 6px; font-weight: 500; font-size: 13px; text-decoration: underline; text-underline-offset: 3px }
+button:disabled { opacity: .5; cursor: default }
+.progress { height: 8px; border-radius: 99px; background: var(--bg); border: 1px solid var(--line); overflow: hidden }
+.progress > i { display: block; height: 100%; background: var(--gold); border-radius: 99px; transition: width .5s }
+pre.code { background: var(--code); color: var(--code-ink); font: 500 15px/1.55 var(--mono); padding: 12px 14px; border-radius: 8px; overflow-x: auto; margin: 0; white-space: pre }
+.q { font: 500 17px/1.4 var(--body); margin: 0 }
+.choices { display: grid; gap: 8px }
+.choice { text-align: left; display: flex; gap: 10px; align-items: flex-start; font: 500 15px/1.4 var(--mono); padding: 11px 12px; min-width: 0 }
+.choice kbd { font: 600 11px var(--mono); color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 1px 5px; flex: none; margin-top: 2px }
+.choice span { white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0 }
+.choice.right { background: var(--good-soft); border-color: var(--good) }
+.choice.wrong { background: var(--bad-soft); border-color: var(--bad) }
+.answer { display: flex; gap: 8px }
+.answer input { flex: 1; min-width: 0; font: 500 18px var(--mono); padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink) }
+.verdict { border-radius: 10px; padding: 14px 16px; display: grid; gap: 10px }
+.verdict.ok { background: var(--good-soft); border: 1px solid var(--good) }
+.verdict.no { background: var(--bad-soft); border: 1px solid var(--bad) }
+.verdict .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap }
+.verdict .head b { font: 700 22px var(--display) }
+.delta { font: 700 20px var(--display) }
+.delta.up { color: var(--good) } .delta.down { color: var(--bad) }
+.why { margin: 0; padding-left: 18px; display: grid; gap: 4px }
+.trace { width: 100%; border-collapse: collapse; font: 13px/1.4 var(--mono) }
+.trace td { padding: 4px 6px; border-top: 1px solid var(--line); vertical-align: top }
+.trace td:first-child { white-space: nowrap; color: var(--muted) }
+.src { font-size: 12px; color: var(--muted); margin: 0; padding-left: 18px }
+.wrap-x { overflow-x: auto }
+.race { position: relative; height: 34px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line) }
+.race .lane { position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; background: var(--line) }
+.runner { position: absolute; top: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; border-radius: 50%; transition: left .6s cubic-bezier(.2,.8,.2,1); display: grid; place-items: center; font: 700 10px var(--display) }
+.runner.you { background: var(--gold); color: var(--panel); z-index: 2 }
+.runner.ghost { background: var(--ghost); color: var(--panel); opacity: .55 }
+.hud { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px }
+.hud div { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; min-width: 0 }
+.hud b { display: block; font: 700 20px/1.1 var(--display); font-variant-numeric: tabular-nums }
+.hud small { font: 500 11px var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
+.days { display: flex; gap: 6px }
+.day { flex: 1; text-align: center; font: 500 11px var(--mono); color: var(--muted) }
+.day i { display: block; height: 26px; border-radius: 6px; background: var(--bg); border: 1px solid var(--line); margin-bottom: 4px }
+.day.done i { background: var(--gold); border-color: var(--gold) }
+.day.part i { background: var(--gold-soft); border-color: var(--gold) }
+.ladder { display: grid; gap: 0 }
+.lrow { display: grid; grid-template-columns: 28px 34px 1fr auto; gap: 10px; align-items: center; padding: 9px 4px; border-top: 1px solid var(--line) }
+.lrow:first-child { border-top: none }
+.lrow.me { background: var(--gold-soft); border-radius: 8px; border-top-color: transparent }
+.lrow.gh { color: var(--ghost) }
+.lrow .pos { font: 600 14px var(--display); color: var(--muted); text-align: right }
+.lrow .who { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600 }
+.lrow .who small { display: block; font: 500 11px var(--mono); color: var(--muted); font-weight: 400 }
+.lrow .score { font: 700 18px var(--display); font-variant-numeric: tabular-nums; text-align: right }
+.concept { display: grid; grid-template-columns: 1fr 90px 52px auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line) }
+.concept:first-of-type { border-top: none }
+.chart { width: 100%; height: 150px; display: block }
+.toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 70px); transform: translateX(-50%); z-index: 20; background: var(--panel); border: 2px solid var(--gold);
+  border-radius: 14px; padding: 18px 22px; text-align: center; box-shadow: 0 10px 40px rgb(0 0 0 / .25); animation: pop .5s cubic-bezier(.2,1.4,.4,1) }
+@keyframes pop { from { transform: translateX(-50%) scale(.7); opacity: 0 } }
+.flash-ok { animation: fok .5s } .flash-no { animation: fno .4s }
+@keyframes fok { 30% { box-shadow: 0 0 0 4px var(--good) } }
+@keyframes fno { 20%, 60% { transform: translateX(-5px) } 40%, 80% { transform: translateX(5px) } }
+.lives { display: flex; gap: 4px } .lives i { width: 14px; height: 14px; border-radius: 3px; background: var(--bad) } .lives i.lost { background: var(--line) }
+.note { font-size: 13px; color: var(--muted); margin: 0 }
+.claude { white-space: pre-wrap; background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: 14px }
+@media (max-width: 480px) { .hud { grid-template-columns: repeat(2, 1fr) } .big { font-size: 38px } .concept { grid-template-columns: 1fr 60px 44px auto } nav a { padding: 6px 7px } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important } }
+</style>
+
+<header><div class="bar">
+  <div class="brand"><span id="hdrEmblem"></span>C6 Tactics <small id="hdrRating"></small></div>
+  <nav>
+    <a href="#play">Play</a><a href="#rush">Rush</a><a href="#ladder">Ladder</a><a href="#stats">Stats</a>
+  </nav>
+</div></header>
+<main id="app">
+  <div class="card"><p class="q">Loading 746 puzzles, all checked by the real ESP toolchain…</p></div>
+</main>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------------------------------------------------------
+// C6 Tactics. Puzzles are opponents with ratings (like chess tactics); you get a Glicko-2 rating against them.
+// The next puzzle is picked the way X's For You feed ranks posts (xai-org/x-algorithm, home-mixer): predict how
+// each candidate will go, score = weighted sum, then diversity decay, an "out-of-network" discount and a new-item
+// boost. Here the prediction is your chance to solve it, and the target is learning, not time spent.
+// ---------------------------------------------------------------------------------------------------------------
+const $ = (s) => document.querySelector(s);
+function h(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null || v === false) continue;
+    if (k === "class") e.className = v; else if (k === "text") e.textContent = v;
+    else if (k.startsWith("on")) e.addEventListener(k.slice(2), v); else if (k === "style") e.style.cssText = v;
+    else e.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null && k !== false) e.append(k instanceof Node ? k : document.createTextNode(String(k)));
+  return e;
+}
+const SVGNS = "http://www.w3.org/2000/svg";
+function s(tag, attrs, ...kids) { const e = document.createElementNS(SVGNS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); e.append(...kids); return e; }
+
+// ---- ranks ------------------------------------------------------------------------------------------------------
+const TIERS = [["Bit", 0, "#8c6a4c"], ["Nibble", 800, "#8f9aa1"], ["Byte", 1000, "#c08a35"], ["Word", 1200, "#3d97c2"],
+  ["Register", 1400, "#2fa774"], ["Bus Master", 1600, "#8a68dc"], ["Kernel", 1800, "#d9506f"], ["Silicon", 2000, "#e9b93c"]];
+function tierOf(r) {
+  let i = 0; while (i + 1 < TIERS.length && r >= TIERS[i + 1][1]) i++;
+  const lo = TIERS[i][1], hi = i + 1 < TIERS.length ? TIERS[i + 1][1] : null;
+  if (hi == null) return { i, name: TIERS[i][0], div: "", color: TIERS[i][2], next: null, frac: 1 };
+  const span = (hi - lo) / 3, d = Math.min(2, Math.floor((r - lo) / span));
+  const nextAt = lo + span * (d + 1);
+  return { i, name: TIERS[i][0], div: ["III", "II", "I"][d], color: TIERS[i][2], next: Math.ceil(nextAt), frac: (r - (lo + span * d)) / span,
+    nextName: d < 2 ? `${TIERS[i][0]} ${["III", "II", "I"][d + 1]}` : `${TIERS[i + 1][0]} III` };
+}
+function emblem(r, size = 30) {   // a chip package: more pins per side as you climb
+  const t = tierOf(r), pins = 1 + Math.min(3, Math.floor(t.i / 2)), g = s("svg", { width: size, height: size, viewBox: "0 0 40 40", "aria-hidden": "true" });
+  for (let k = 0; k < pins; k++) {
+    const p = 8 + (24 / (pins + 1)) * (k + 1) - 1.5;
+    for (const [x, y, w, hh] of [[p, 2, 3, 6], [p, 32, 3, 6], [2, p, 6, 3], [32, p, 6, 3]]) g.append(s("rect", { x, y, width: w, height: hh, rx: 1, fill: "#c9a24a" }));
+  }
+  g.append(s("rect", { x: 7, y: 7, width: 26, height: 26, rx: 4, fill: t.color }));
+  g.append(s("circle", { cx: 12.5, cy: 12.5, r: 2, fill: "rgb(255 255 255 / .55)" }));
+  g.append(s("text", { x: 20, y: 25, "text-anchor": "middle", "font-family": "Chakra Petch, sans-serif", "font-weight": 700, "font-size": 11, fill: "#fff" }, t.div || "★"));
+  return g;
+}
+
+// ---- Glicko-2 (one puzzle = one game, like lichess puzzles) -----------------------------------------------------
+const Q = 173.7178, TAU = 0.5, PUZZLE_RD = 80;
+function expect(r, rd, pr) { const pj = PUZZLE_RD / Q, g = 1 / Math.sqrt(1 + 3 * pj * pj / Math.PI ** 2); return 1 / (1 + Math.exp(-g * ((r - pr) / Q))); }
+function glicko(p, oppR, score) {
+  const mu = (p.r - 1500) / Q, phi = p.rd / Q, mj = (oppR - 1500) / Q, pj = PUZZLE_RD / Q;
+  const g = 1 / Math.sqrt(1 + 3 * pj * pj / Math.PI ** 2), E = 1 / (1 + Math.exp(-g * (mu - mj)));
+  const v = 1 / (g * g * E * (1 - E)), d = v * g * (score - E), a = Math.log(p.vol * p.vol);
+  const f = (x) => { const ex = Math.exp(x); return ex * (d * d - phi * phi - v - ex) / (2 * (phi * phi + v + ex) ** 2) - (x - a) / (TAU * TAU); };
+  let A = a, B;
+  if (d * d > phi * phi + v) B = Math.log(d * d - phi * phi - v); else { let k = 1; while (f(a - k * TAU) < 0 && k < 50) k++; B = a - k * TAU; }
+  let fA = f(A), fB = f(B);
+  for (let it = 0; Math.abs(B - A) > 1e-6 && it < 100; it++) { const C = A + (A - B) * fA / (fB - fA), fC = f(C); if (fC * fB <= 0) { A = B; fA = fB; } else fA /= 2; B = C; fB = fC; }
+  const vol = Math.min(0.09, Math.exp(A / 2)), ps = Math.sqrt(phi * phi + vol * vol), np = 1 / Math.sqrt(1 / (ps * ps) + 1 / v);
+  return { r: Math.max(400, (mu + np * np * g * (score - E)) * Q + 1500), rd: Math.max(75, Math.min(350, np * Q)), vol };
+}
+
+// ---- dates --------------------------------------------------------------------------------------------------------
+const pad = (n) => String(n).padStart(2, "0");
+const dstr = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const today = () => dstr(new Date());
+const dayNum = (str) => Math.round(new Date(str + "T12:00:00").getTime() / 864e5);
+const addDays = (str, n) => { const d = new Date(str + "T12:00:00"); d.setDate(d.getDate() + n); return dstr(d); };
+function weekId(str) { const d = new Date(str + "T12:00:00"), day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day + 3);
+  const y = d.getFullYear(), jan4 = new Date(y, 0, 4); return `${y}-W${pad(1 + Math.round(((d - jan4) / 864e5 - 3 + ((jan4.getDay() + 6) % 7)) / 7))}`; }
+const GOAL = 900;   // seconds of play a day: the streak counts days that reach it
+const fmtTime = (sec) => `${Math.floor(sec / 60)}:${pad(Math.floor(sec % 60))}`;
+
+// ---- state + storage ---------------------------------------------------------------------------------------------
+let PZ = [], BYID = {}, META = {}, LAB = 1;
+let P = null;              // this player's document
+let UID = null, DB = null, USER = null, SAMPLE = null, others = {};
+const LS = "c6tactics.player";
+function newPlayer() { return { v: 1, r: 1000, rd: 350, vol: 0.06, xp: 0, solved: 0, tried: 0, streak: 0, last: null, days: {}, hist: [], wk: {},
+  rush: { best: 0, tl: [], at: null }, best: null, sess: [], cc: {}, seen: {}, cards: {}, neg: {}, flags: {}, upd: 0 }; }
+let writing = Promise.resolve(), dirty = false;
+function save() {
+  P.upd = Date.now();
+  try { localStorage.setItem(LS, JSON.stringify(P)); } catch {}
+  if (!DB || !UID) return;
+  if (dirty) return; dirty = true;   // coalesce: one write in flight per document, the latest state wins
+  writing = writing.then(async () => { dirty = false; try { await DB.doc("players/" + UID).set(JSON.parse(JSON.stringify(P))); } catch (e) { console.warn("save failed", e); } });
+}
+function prune() {
+  const keep = (obj, n) => { const ks = Object.keys(obj).sort(); for (const k of ks.slice(0, Math.max(0, ks.length - n))) delete obj[k]; };
+  keep(P.days, 70); keep(P.wk, 16); if (P.hist.length > 400) P.hist = P.hist.slice(-400); if (P.sess.length > 12) P.sess = P.sess.slice(-12);
+}
+
+// ---- the picker (X's For You ranking, retargeted at learning) --------------------------------------------------------
+// X: Final Score = Σ weight_i × P(action_i), then author-diversity decay (down to a floor), an out-of-network discount
+// and a new-author boost, then a diversity reranker. Ours, per candidate puzzle:
+//   learn   how close your solve chance is to the sweet spot (70%: hard enough to teach, easy enough to keep going)
+//   due     its concept has a review card due (you missed it before; spaced repetition)
+//   fresh   a concept you have never seen, lifted into the feed every ~6 puzzles (X's new-author boost)
+//   rematch a puzzle you missed, back after two days
+// × track: concepts of your current lab 1.0, earlier labs 0.8, later labs 0.6 if you'd likely solve it, else 0.25
+// × diversity: 0.55 per same-concept puzzle in the last 3, floor 0.3 (X: author diversity decay)
+// × your "too easy / confusing" feedback on that concept (X's "not interested" carries a weight of -53)
+function pickNext(sess) {
+  const d = today(), dn = dayNum(d), recent = sess.ids.slice(-3).map((id) => BYID[id].c);
+  const sinceNew = sess.ids.length - (sess.lastNew ?? -99), tilt = sess.results.slice(-2).length === 2 && sess.results.slice(-2).every((x) => !x);
+  const target = tilt ? 0.85 : 0.7, scored = [];
+  for (const p of PZ) {
+    if (sess.focus && p.c !== sess.focus) continue;
+    if (sess.ids.includes(p.id)) continue;
+    const seen = P.seen[p.id], rematch = seen && !seen[0] && dn - seen[1] >= 2;
+    if (seen && seen[0] && dn - seen[1] < 21) continue;                  // solved: hidden for three weeks
+    if (seen && !seen[0] && !rematch) continue;
+    const ps = expect(P.r, P.rd, p.r);
+    let score = Math.exp(-((ps - target) ** 2) / (2 * 0.12 ** 2));
+    const card = P.cards[p.c], due = card && card[1] <= dn;
+    const fresh = !P.cc[p.c];
+    if (due) score += 0.6;
+    if (fresh) score += sinceNew >= 6 ? 0.8 : -0.2;
+    if (rematch) score += 0.4;
+    score *= p.lab === LAB ? 1 : p.lab < LAB ? 0.8 : ps > 0.55 ? 0.6 : 0.25;
+    const same = recent.filter((c) => c === p.c).length;
+    score *= Math.max(0.3, 0.55 ** same);
+    score *= 0.75 ** (P.neg[p.c] || 0);
+    score *= 0.9 + 0.2 * Math.random();
+    const why = rematch ? "Rematch" : due ? "Review due" : fresh ? "New concept" : p.lab > LAB ? `Preview · Lab ${p.lab}` : p.lab < LAB ? "Review" : `Lab ${p.lab}`;
+    scored.push({ p, score, why });
+  }
+  if (!scored.length) return null;
+  scored.sort((a, b) => b.score - a.score);
+  const top = scored.slice(0, 6), w = top.map((x) => x.score ** 3), tot = w.reduce((a, b) => a + b, 0);
+  let k = Math.random() * tot; for (let i = 0; i < top.length; i++) { k -= w[i]; if (k <= 0) return top[i]; }
+  return top[0];
+}
+
+// ---- answers --------------------------------------------------------------------------------------------------------
+function parseNum(str, fmt) {
+  let t = str.trim().toLowerCase().replace(/[_\s]/g, "");
+  if (!t) return null;
+  let neg = false; if (t.startsWith("-")) { neg = true; t = t.slice(1); }
+  let v;
+  if (fmt === "hex") { t = t.replace(/^0x/, ""); if (!/^[0-9a-f]+$/.test(t)) return null; v = BigInt("0x" + t); }
+  else if (fmt === "dec") { if (!/^[0-9]+$/.test(t)) return null; v = BigInt(t); }
+  else if (/^0x[0-9a-f]+$/.test(t)) v = BigInt(t); else if (/^0b[01]+$/.test(t)) v = BigInt(t); else if (/^[0-9]+$/.test(t)) v = BigInt(t); else return null;
+  if (neg) v = -v;
+  return v;
+}
+function checkVal(p, str) {
+  const v = parseNum(str, p.fmt); if (v == null) return null;
+  const mod = 1n << BigInt(p.w || 32);
+  return ((v % mod) + mod) % mod === BigInt(p.ans);
+}
+const hexw = (v, w = 32) => "0x" + (v >>> 0).toString(16).padStart(w / 4, "0");
+const signed = (v) => (v | 0);
+function answerText(p) {
+  if (p.k === "pick") return p.ch[p.ans];
+  if (p.fmt === "dec") return String(p.q.includes("signed") ? signed(p.ans) : p.ans);
+  const sx = signed(p.ans);
+  return hexw(p.ans, p.w || 32) + (p.w === 8 || p.fmt === "hex" ? "" : `  (${p.ans >>> 0}${sx < 0 ? ` = ${sx} signed` : ""})`);
+}
+
+function record(p, ok, sec, mode) {
+  const d = today(), dn = dayNum(d), before = { r: P.r, rd: P.rd };
+  let delta = 0;
+  if (mode === "rated") { Object.assign(P, glicko(P, p.r, ok ? 1 : 0)); delta = Math.round(P.r) - Math.round(before.r); }
+  P.tried++; if (ok) P.solved++;
+  const cc = P.cc[p.c] || (P.cc[p.c] = [0, 0]); cc[0]++; if (ok) cc[1]++;
+  if (mode === "rated") {
+    P.seen[p.id] = [ok ? 1 : 0, dn];
+    const card = P.cards[p.c];
+    if (!ok) P.cards[p.c] = [0, dn + 1];
+    else if (card) { const box = Math.min(5, card[0] + 1); P.cards[p.c] = [box, dn + [1, 2, 4, 8, 16, 32][box]]; if (box >= 5) delete P.cards[p.c]; }
+  }
+  const day = P.days[d] || (P.days[d] = { xp: 0, sec: 0, n: 0, ok: 0 });
+  const wasGoal = day.sec >= GOAL;
+  day.sec += Math.min(sec, 120); day.n++; if (ok) day.ok++;
+  if (!wasGoal && day.sec >= GOAL) { P.streak = P.last === addDays(d, -1) ? P.streak + 1 : P.last === d ? P.streak : 1; P.last = d; streakEvent = true; }
+  const last = P.hist[P.hist.length - 1];
+  if (last && last[0] === d) last[1] = Math.round(P.r); else P.hist.push([d, Math.round(P.r)]);
+  prune();
+  return delta;
+}
+function addXp(n) { const d = today(); P.xp += n; P.days[d].xp += n; const w = weekId(d); P.wk[w] = (P.wk[w] || 0) + n; }
+function streakNow() { const d = today(); return P.last === d || P.last === addDays(d, -1) ? P.streak : 0; }
+let streakEvent = false;
+
+// ---- sound (after the first click; mute in Stats) -------------------------------------------------------------------
+let AC = null, muted = false;
+try { muted = localStorage.getItem("c6tactics.mute") === "1"; } catch {}
+function beep(ok) {
+  if (muted) return;
+  try { AC = AC || new AudioContext(); const t = AC.currentTime, notes = ok ? [660, 880] : [220, 180];
+    notes.forEach((f, i) => { const o = AC.createOscillator(), g = AC.createGain(); o.type = ok ? "triangle" : "sawtooth"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t + i * 0.09); g.gain.exponentialRampToValueAtTime(ok ? 0.12 : 0.05, t + i * 0.09 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.18);
+      o.connect(g).connect(AC.destination); o.start(t + i * 0.09); o.stop(t + i * 0.09 + 0.2); }); } catch {}
+}
+function toast(title, sub, r) {
+  const t = h("div", { class: "toast", role: "status" }, r != null ? h("div", {}, emblem(r, 64)) : null, h("div", { class: "mid", text: title }), sub ? h("div", { class: "muted", text: sub }) : null);
+  document.body.append(t); setTimeout(() => t.remove(), 2600);
+}
+
+// ---- header ------------------------------------------------------------------------------------------------------------
+function renderHeader() {
+  $("#hdrEmblem").replaceChildren(emblem(P.r, 26));
+  const t = tierOf(P.r);
+  $("#hdrRating").textContent = `${Math.round(P.r)}${P.rd > 110 ? "?" : ""} · ${t.name} ${t.div}`;
+  for (const a of document.querySelectorAll("nav a")) { if (a.getAttribute("href") === "#" + view()) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); }
+}
+const view = () => (location.hash.slice(1) || "play").split("-")[0];
+
+// ---- HOME --------------------------------------------------------------------------------------------------------------
+let SESS = null, RUSH = null, timerId = null;
+function renderHome() {
+  const t = tierOf(P.r), d = today(), day = P.days[d] || { sec: 0, xp: 0 }, st = streakNow();
+  const ghost = P.best;
+  const week = [];
+  for (let i = 6; i >= 0; i--) { const k = addDays(d, -i), x = P.days[k]; week.push(h("div", { class: "day " + (x && x.sec >= GOAL ? "done" : x && x.sec > 0 ? "part" : "") },
+    h("i"), ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"][(new Date(k + "T12:00").getDay() + 6) % 7])); }
+  const provisional = P.rd > 110;
+  return [
+    h("div", { class: "card" },
+      h("div", { class: "row" }, emblem(P.r, 76),
+        h("div", { class: "grow" },
+          h("div", { class: "muted", style: "font:600 12px var(--display);letter-spacing:.1em;text-transform:uppercase", text: provisional ? `Placement · ${Math.min(P.tried, 10)}/10 puzzles` : "Your rating" }),
+          h("div", { class: "row", style: "gap:10px;align-items:baseline" }, h("span", { class: "big num", text: Math.round(P.r) + (provisional ? "?" : "") }), h("span", { class: "mid", style: `color:${t.color}`, text: `${t.name} ${t.div}` })),
+          t.next ? h("div", { style: "margin-top:8px" }, h("div", { class: "progress" }, h("i", { style: `width:${Math.round(t.frac * 100)}%` })),
+            h("div", { class: "note", style: "margin-top:4px", text: `${t.next - Math.round(P.r)} points to ${t.nextName}` })) : h("div", { class: "note", text: "Top rank. Keep it." })))),
+    h("div", { class: "hud" },
+      h("div", {}, h("small", { text: "Streak" }), h("b", { text: `${st} day${st === 1 ? "" : "s"}` })),
+      h("div", {}, h("small", { text: "Today" }), h("b", { text: `${Math.floor(day.sec / 60)}/15 min` })),
+      h("div", {}, h("small", { text: "This week" }), h("b", { text: `${P.wk[weekId(d)] || 0} XP` })),
+      h("div", {}, h("small", { text: "Solved" }), h("b", { text: P.solved }))),
+    h("div", { class: "card", style: "display:grid;gap:12px" },
+      h("div", { class: "days" }, week),
+      h("p", { class: "note", text: day.sec >= GOAL ? `Goal done today. Streak: ${st} day${st === 1 ? "" : "s"}.` : st ? `Play ${Math.ceil((GOAL - day.sec) / 60)} more minutes today to keep your ${st}-day streak.` : "Play 15 minutes a day to start a streak." }),
+      h("button", { class: "primary", onclick: () => startSession(null) }, "Play a 15-minute session"),
+      h("p", { class: "note" }, ghost ? h("span", {}, h("span", { class: "tag ghost", text: "ghost" }), ` Your best session: ${ghost.xp} XP. It races you, minute by minute.`) : "Your first session becomes your ghost: next time you race it."),
+      h("div", { class: "row" },
+        h("button", { onclick: () => (location.hash = "rush") }, "Puzzle Rush · 5 min"),
+        h("span", { class: "note grow", text: P.rush.best ? `Best: ${P.rush.best} in a row` : "3 mistakes and it's over." }))),
+    h("p", { class: "note" }, `Track: Lab ${LAB} (${labName(LAB)}). ${PZ.length} puzzles; every answer comes from the ESP assembler, QEMU, GCC or ESP-IDF's headers.`),
+  ];
+}
+const LABS = { 0: "Hello", 1: "Ripes", 2: "Assembly on the chip", 3: "Multiply", 4: "Memory", 5: "C to assembly", 6: "A pin from an instruction", 7: "GPIO" };
+const labName = (n) => LABS[n] || "";
+
+// ---- SESSION (15 minutes against your ghost) ----------------------------------------------------------------------
+function startSession(focus) {
+  SESS = { start: Date.now(), paused: 0, pauseAt: null, ids: [], results: [], tl: [[0, 0]], xp: 0, combo: 0, bestCombo: 0, r0: P.r, focus, lastNew: null, cur: null, done: false,
+    ghost: P.best ? P.best.tl : null, ghostName: "best session" };
+  if (view() !== "play") location.hash = "play";
+  nextPuzzle(); window.scrollTo(0, 0);
+}
+const elapsed = (S) => ((S.pauseAt || Date.now()) - S.start - S.paused) / 1000;
+document.addEventListener("visibilitychange", () => {
+  for (const S of [SESS, RUSH]) { if (!S || S.done) continue; if (document.hidden) S.pauseAt = Date.now(); else if (S.pauseAt) { S.paused += Date.now() - S.pauseAt; S.pauseAt = null; } }
+});
+function ghostAt(tl, sec) { if (!tl) return null; let v = 0; for (const [t, x] of tl) { if (t <= sec) v = x; else break; } return v; }
+function nextPuzzle() {
+  const pick = pickNext(SESS);
+  if (!pick) { SESS.cur = null; render(); return; }
+  if (!P.cc[pick.p.c]) SESS.lastNew = SESS.ids.length;
+  SESS.ids.push(pick.p.id); SESS.cur = { p: pick.p, why: pick.why, t0: Date.now(), answered: null, picked: null };
+  render();
+}
+function answer(ok, picked) {
+  const S = SESS, c = S.cur; if (!c || c.answered) return;
+  const sec = (Date.now() - c.t0) / 1000;
+  const rBefore = P.r, tBefore = tierOf(P.r);
+  const delta = record(c.p, ok, sec, "rated");
+  S.combo = ok ? S.combo + 1 : 0; S.bestCombo = Math.max(S.bestCombo, S.combo);
+  const mult = S.combo >= 6 ? 2 : S.combo >= 3 ? 1.5 : 1;
+  const gain = ok ? Math.round((10 + Math.max(0, Math.min(10, Math.round((c.p.r - rBefore) / 40))) + (sec < 20 ? 3 : 0)) * mult) : 1;
+  addXp(gain); S.xp += gain; S.results.push(ok); S.tl.push([Math.round(elapsed(S)), S.xp]);
+  c.answered = { ok, delta, gain, mult, sec }; c.picked = picked;
+  save(); beep(ok);
+  const tAfter = tierOf(P.r);
+  if (P.rd <= 110 && (tAfter.i > tBefore.i || (tAfter.i === tBefore.i && tAfter.div !== tBefore.div && delta > 0))) toast(`${tAfter.name} ${tAfter.div}`, "Promoted!", P.r);
+  else if (streakEvent) { streakEvent = false; toast(`${P.streak}-day streak`, "Today's 15 minutes: done."); }
+  render();
+}
+function finishSession() {
+  const S = SESS; if (!S || S.done) return; S.done = true; clearInterval(timerId);
+  const ses = { at: today(), xp: S.xp, tl: S.tl, dr: Math.round(P.r - S.r0), n: S.results.length, ok: S.results.filter(Boolean).length };
+  S.beatGhost = P.best ? S.xp > P.best.xp : null; S.prevBest = P.best ? P.best.xp : null;
+  if (S.results.length && (!P.best || S.xp > P.best.xp)) P.best = { xp: S.xp, tl: S.tl, at: today() };
+  if (S.results.length) P.sess.push(ses);
+  prune(); save(); render();
+}
+function renderSession() {
+  const S = SESS;
+  if (!S) return renderHome();
+  if (S.done) return renderRecap();
+  const el = elapsed(S), left = Math.max(0, 900 - el), gx = ghostAt(S.ghost, el);
+  if (left <= 0 && (!S.cur || S.cur.answered)) { setTimeout(finishSession); }
+  const max = Math.max(60, S.xp, gx || 0, S.ghost ? S.ghost[S.ghost.length - 1][1] : 0) * 1.08;
+  const pos = (x) => `calc(10px + (100% - 20px) * ${Math.min(1, x / max)})`;
+  const out = [
+    h("div", { class: "hud" },
+      h("div", {}, h("small", { text: "Time left" }), h("b", { id: "clock", text: fmtTime(left) })),
+      h("div", {}, h("small", { text: "Session XP" }), h("b", { text: S.xp })),
+      h("div", {}, h("small", { text: "Combo" }), h("b", { text: S.combo >= 3 ? `${S.combo} ×${S.combo >= 6 ? 2 : 1.5}` : S.combo })),
+      h("div", {}, h("small", { text: "Rating" }), h("b", {}, String(Math.round(P.r)), h("span", { class: "delta " + (P.r >= S.r0 ? "up" : "down"), style: "font-size:13px;margin-left:6px", text: `${P.r >= S.r0 ? "+" : ""}${Math.round(P.r - S.r0)}` })))),
+    h("div", { style: "display:grid;gap:4px" },
+      h("div", { class: "race", "aria-label": "Race against your ghost" }, h("div", { class: "lane" }),
+        gx != null ? h("div", { class: "runner ghost", id: "ghostDot", style: `left:${pos(gx)}`, title: "Your ghost" }, "G") : null,
+        h("div", { class: "runner you", style: `left:${pos(S.xp)}`, title: "You" }, "Y")),
+      h("p", { class: "note", id: "raceNote", text: raceText(S, gx) })),
+  ];
+  if (!S.cur) out.push(h("div", { class: "card" }, h("p", { class: "q", text: "You've solved every puzzle available right now. Impressive. More come with each new lab." }), h("button", { onclick: finishSession }, "End session")));
+  else out.push(...renderPuzzle(S.cur, "rated"));
+  out.push(h("div", { class: "row" }, h("button", { class: "link", onclick: finishSession }, "End session now"), S.focus ? h("span", { class: "tag", text: "Drill: " + META.concepts[S.focus].name }) : null));
+  return out;
+}
+function raceText(S, gx) {
+  if (gx == null) return "No ghost yet: this session will be the one to beat.";
+  const d = S.xp - gx;
+  return d > 0 ? `${d} XP ahead of your ${S.ghostName}.` : d < 0 ? `${-d} XP behind your ${S.ghostName}.` : `Level with your ${S.ghostName}.`;
+}
+function tick() {
+  const S = view() === "rush" ? RUSH : SESS; if (!S || S.done) return;
+  const el = elapsed(S), limit = S === RUSH ? 300 : 900, left = Math.max(0, limit - el);
+  const c = $("#clock"); if (c) c.textContent = fmtTime(left);
+  if (S === SESS) { const gx = ghostAt(S.ghost, el), n = $("#raceNote"); if (n) n.textContent = raceText(S, gx);
+    const g = $("#ghostDot"); if (g && gx != null) { const max = Math.max(60, S.xp, gx, S.ghost[S.ghost.length - 1][1]) * 1.08; g.style.left = `calc(10px + (100% - 20px) * ${Math.min(1, gx / max)})`; } }
+  if (S === RUSH) { const pb = $("#pbNote"); if (pb) pb.textContent = rushPbText(S, el); }
+  if (left <= 0) { if (S === RUSH) finishRush(); else if (!S.cur || S.cur.answered) finishSession(); }
+}
+
+function renderPuzzle(c, mode) {
+  const p = c.p, a = c.answered, cname = META.concepts[p.c].name, pt = tierOf(p.r);
+  const card = h("div", { class: "card" + (a ? (a.ok ? " flash-ok" : " flash-no") : ""), style: "display:grid;gap:12px" },
+    h("div", { class: "row", style: "gap:6px" },
+      h("span", { class: "tag", style: `color:${pt.color};font-weight:600`, title: "This puzzle's rating: your opponent", text: `⚑ ${p.r}` }),
+      h("span", { class: "tag", text: cname }),
+      c.why ? h("span", { class: "tag gold", title: "Why this puzzle", text: c.why }) : null),
+    h("p", { class: "q", text: p.q }),
+    p.code ? h("pre", { class: "code", text: p.code }) : null);
+  if (p.k === "pick") {
+    const box = h("div", { class: "choices" });
+    p.ch.forEach((txt, i) => {
+      const cls = a ? (i === p.ans ? " right" : i === c.picked ? " wrong" : "") : "";
+      box.append(h("button", { class: "choice" + cls, disabled: !!a, "data-k": i + 1, onclick: () => (mode === "rush" ? rushAnswer(i === p.ans, i) : answer(i === p.ans, i)) },
+        h("kbd", { text: i + 1 }), h("span", { text: txt })));
+    });
+    card.append(box);
+  } else {
+    const ph = p.fmt === "hex" ? "hex, like 0x1f" : p.fmt === "dec" ? "a decimal number" : "hex (0x…) or decimal";
+    const inp = h("input", { id: "ans-" + p.id, inputmode: p.fmt === "dec" ? "numeric" : "text", autocomplete: "off", autocapitalize: "off", spellcheck: "false", placeholder: ph, disabled: !!a, value: a ? c.picked : "" });
+    const msg = h("p", { class: "note", style: "min-height:1.2em" });
+    const go = () => { const r = checkVal(p, inp.value); if (r == null) { msg.textContent = `That doesn't read as ${ph}.`; return; } mode === "rush" ? rushAnswer(r, inp.value) : answer(r, inp.value); };
+    inp.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); e.stopPropagation(); go(); } });
+    card.append(h("div", { class: "answer" }, inp, h("button", { class: "gold", disabled: !!a, onclick: go }, "Check")), msg);
+    if (!a) setTimeout(() => inp.focus({ preventScroll: true }));
+  }
+  const out = [card];
+  if (a && mode === "rated") out.push(renderVerdict(c));
+  return out;
+}
+function renderVerdict(c) {
+  const p = c.p, a = c.answered;
+  const v = h("div", { class: "verdict " + (a.ok ? "ok" : "no") },
+    h("div", { class: "head" }, h("b", { text: a.ok ? "Solved" : "Missed" }),
+      h("span", { class: "delta " + (a.delta >= 0 ? "up" : "down"), text: `${a.delta >= 0 ? "+" : ""}${a.delta}` }),
+      h("span", { class: "muted", text: `+${a.gain} XP${a.mult > 1 ? ` (combo ×${a.mult})` : ""} · ${a.sec.toFixed(0)} s` })),
+    !a.ok || p.k === "val" ? h("div", {}, h("span", { class: "muted", text: "Answer: " }), h("code", { style: "font:600 15px var(--mono);white-space:pre-wrap", text: answerText(p) })) : null,
+    h("ul", { class: "why" }, (p.why || []).map((t) => h("li", { text: t }))));
+  if (p.trace) v.append(h("div", { class: "wrap-x" }, h("table", { class: "trace" }, h("tbody", {}, p.trace.map(([l, r]) => h("tr", {}, h("td", { text: l }), h("td", { text: r })))))));
+  v.append(h("ul", { class: "src" }, p.src.map((t) => h("li", { text: t }))));
+  const ask = h("div", { class: "claude", hidden: true });
+  const row = h("div", { class: "row" },
+    h("button", { class: "primary grow", id: "nextBtn", onclick: () => (elapsed(SESS) >= 900 ? finishSession() : nextPuzzle()) }, elapsed(SESS) >= 900 ? "See results" : "Next  ⏎"),
+    SAMPLE ? h("button", { onclick: (e) => askClaude(p, c, ask, e.currentTarget) }, "Ask Claude why") : null);
+  const fb = h("div", { class: "row", style: "gap:2px" }, h("span", { class: "note", text: "This puzzle was:" }),
+    h("button", { class: "link", onclick: (e) => feedback(p, "easy", e.currentTarget) }, "too easy"),
+    h("button", { class: "link", onclick: (e) => feedback(p, "confusing", e.currentTarget) }, "confusing"),
+    h("button", { class: "link", onclick: (e) => feedback(p, "wrong", e.currentTarget) }, "wrong answer?"));
+  v.append(row, ask, fb);
+  return v;
+}
+function feedback(p, kind, btn) {
+  if (kind === "easy") P.neg[p.c] = (P.neg[p.c] || 0) + 1;
+  P.flags[p.id] = kind; save(); btn.textContent = "noted"; btn.disabled = true;
+}
+async function askClaude(p, c, box, btn) {
+  btn.disabled = true; box.hidden = false; box.textContent = "Thinking…";
+  const facts = { question: p.q, code: p.code || null, choices: p.ch || null, correct: answerText(p), learner_answer: p.k === "pick" ? p.ch[c.picked] : c.picked,
+    learner_was_right: c.answered.ok, explanation: p.why, trace: p.trace || null, sources: p.src };
+  const prompt = `You are a patient embedded-systems tutor. The learner is studying the ESP32-C6 (RISC-V RV32IMAC) bottom-up.
+Explain this puzzle in simple English (short sentences, common words, like ASD-STE100). At most 140 words.
+If the learner was wrong, say exactly which step of their reasoning likely went wrong, then the rule to remember.
+Use only the facts below; they come from the real assembler, QEMU, GCC or ESP-IDF. No markdown headings.
+${JSON.stringify(facts)}`;
+  try { await SAMPLE(prompt, { modelTier: "quick", onText: ({ text }) => { box.textContent = text; } }); }
+  catch (e) { box.textContent = e && e.code === "not_granted" ? "Claude isn't available on this page for you." : "Claude couldn't answer right now. Try again in a minute."; btn.disabled = false; }
+}
+function renderRecap() {
+  const S = SESS, n = S.results.length, ok = S.results.filter(Boolean).length, dr = Math.round(P.r - S.r0), t = tierOf(P.r);
+  const missed = [...new Set(S.ids.filter((id, i) => !S.results[i]).map((id) => BYID[id].c))];
+  return [h("div", { class: "card", style: "display:grid;gap:14px;text-align:center;justify-items:center" },
+    h("div", { class: "muted", style: "font:600 12px var(--display);letter-spacing:.1em;text-transform:uppercase", text: "Session over" }),
+    S.beatGhost === true ? h("div", { class: "mid", style: "color:var(--gold)", text: `You beat your ghost: ${S.xp} vs ${S.prevBest} XP` })
+      : S.beatGhost === false ? h("div", { class: "mid", style: "color:var(--ghost)", text: `Your ghost wins: ${S.prevBest} vs ${S.xp} XP` })
+      : h("div", { class: "mid", text: `${S.xp} XP: this is your ghost now` }),
+    emblem(P.r, 70),
+    h("div", { class: "row", style: "justify-content:center;gap:20px" },
+      h("div", {}, h("div", { class: "big num", text: Math.round(P.r) }), h("div", { class: "delta " + (dr >= 0 ? "up" : "down"), text: `${dr >= 0 ? "+" : ""}${dr} rating` })),
+      h("div", {}, h("div", { class: "big num", text: `${ok}/${n}` }), h("div", { class: "muted", text: `best combo ${S.bestCombo}` }))),
+    t.next ? h("p", { class: "note", text: `${t.name} ${t.div} · ${t.next - Math.round(P.r)} points to ${t.nextName}` }) : null,
+    missed.length ? h("p", { class: "note", text: "Coming back for review: " + missed.map((c) => META.concepts[c].name).join(", ") }) : null,
+    h("p", { class: "note", text: (P.days[today()]?.sec || 0) >= GOAL ? `Streak: ${streakNow()} day${streakNow() === 1 ? "" : "s"}. Good place to stop for today.` : `${Math.ceil((GOAL - (P.days[today()]?.sec || 0)) / 60)} more minutes today for the streak.` }),
+    h("div", { class: "row", style: "justify-content:center" },
+      h("button", { class: "primary", onclick: () => startSession(S.focus) }, "Another session"),
+      h("button", { onclick: () => { SESS = null; location.hash = "play"; render(); } }, "Home")))];
+}
+
+// ---- PUZZLE RUSH (5 minutes, 3 strikes, rising difficulty, against your best run) ---------------------------------------
+function startRush() {
+  RUSH = { start: Date.now(), paused: 0, pauseAt: null, ids: [], score: 0, strikes: 0, done: false, misses: [], cur: null, tl: [] };
+  nextRush(); render();
+}
+function nextRush() {
+  const R = RUSH, target = 600 + 45 * R.score + 25 * R.strikes;
+  const pool = PZ.filter((p) => !R.ids.includes(p.id) && Math.abs(p.r - target) < (p.k === "pick" ? 90 : 60) && (p.k === "pick" || p.fmt));
+  const p = pool.length ? pool[Math.floor(Math.random() * pool.length)] : PZ.filter((x) => !R.ids.includes(x.id)).sort((a, b) => Math.abs(a.r - target) - Math.abs(b.r - target))[0];
+  R.ids.push(p.id); R.cur = { p, t0: Date.now(), answered: null, picked: null, why: null };
+}
+function rushAnswer(ok, picked) {
+  const R = RUSH; if (!R || R.done || R.cur.answered) return;
+  record(R.cur.p, ok, (Date.now() - R.cur.t0) / 1000, "rush");
+  beep(ok);
+  if (ok) { R.score++; R.tl.push(Math.round(elapsed(R))); addXp(3); } else { R.strikes++; R.misses.push({ p: R.cur.p, picked }); addXp(1); }
+  save();
+  if (R.strikes >= 3) return finishRush();
+  nextRush(); render();
+}
+function finishRush() {
+  const R = RUSH; if (!R || R.done) return; R.done = true;
+  R.prev = P.rush.best;
+  if (R.score > P.rush.best) P.rush = { best: R.score, tl: R.tl, at: today() };
+  save(); render();
+}
+function rushPbText(R, el) {
+  if (!P.rush.best) return "First run: it sets your personal best.";
+  const pace = P.rush.tl.filter((t) => t <= el).length, d = R.score - pace;
+  return `Best run (${P.rush.best}) had ${pace} by now: ${d > 0 ? `you're ${d} ahead` : d < 0 ? `you're ${-d} behind` : "level"}.`;
+}
+function renderRush() {
+  const R = RUSH;
+  if (!R) {
+    const board = rushBoard();
+    return [h("div", { class: "card", style: "display:grid;gap:12px" },
+      h("div", { class: "mid", text: "Puzzle Rush" }),
+      h("p", { class: "note", text: "5 minutes. Puzzles start easy and get harder with every solve. Three mistakes and it's over. Your best run races you." }),
+      h("div", { class: "row" }, h("button", { class: "primary", onclick: startRush }, "Start Rush"), h("span", { class: "note", text: P.rush.best ? `Personal best: ${P.rush.best}` : "No best yet" }))),
+      h("h2", { text: "Best runs" }), board];
+  }
+  if (R.done) {
+    return [h("div", { class: "card", style: "display:grid;gap:12px;text-align:center;justify-items:center" },
+      h("div", { class: "muted", style: "font:600 12px var(--display);letter-spacing:.1em;text-transform:uppercase", text: "Rush over" }),
+      h("div", { class: "big num", text: R.score }),
+      h("div", { class: "mid", style: `color:${R.score > R.prev ? "var(--gold)" : "var(--ghost)"}`, text: R.score > R.prev ? (R.prev ? `New best! (was ${R.prev})` : "Your first best") : `Best is still ${R.prev}` }),
+      h("div", { class: "row", style: "justify-content:center" }, h("button", { class: "primary", onclick: startRush }, "Again"), h("button", { onclick: () => { RUSH = null; render(); } }, "Back"))),
+      R.misses.length ? h("h2", { text: "Your misses" }) : null,
+      ...R.misses.map(({ p }) => h("div", { class: "card", style: "display:grid;gap:8px" }, h("p", { class: "q", text: p.q }), p.code ? h("pre", { class: "code", text: p.code }) : null,
+        h("div", {}, h("span", { class: "muted", text: "Answer: " }), h("code", { style: "font:600 15px var(--mono);white-space:pre-wrap", text: answerText(p) })), h("ul", { class: "why" }, (p.why || []).slice(0, 2).map((t) => h("li", { text: t })))))];
+  }
+  const el = elapsed(R);
+  return [h("div", { class: "hud" },
+    h("div", {}, h("small", { text: "Time left" }), h("b", { id: "clock", text: fmtTime(Math.max(0, 300 - el)) })),
+    h("div", {}, h("small", { text: "Solved" }), h("b", { text: R.score })),
+    h("div", {}, h("small", { text: "Lives" }), h("div", { class: "lives", style: "margin-top:6px" }, [0, 1, 2].map((i) => h("i", { class: i < R.strikes ? "lost" : "" })))),
+    h("div", {}, h("small", { text: "Best" }), h("b", { text: P.rush.best || "–" }))),
+    h("p", { class: "note", id: "pbNote", text: rushPbText(R, el) }),
+    ...renderPuzzle(R.cur, "rush")];
+}
+function rushBoard() {
+  const rows = allPlayers().filter((x) => x.doc.rush && x.doc.rush.best).sort((a, b) => b.doc.rush.best - a.doc.rush.best);
+  if (!rows.length) return h("p", { class: "note", text: "No runs yet." });
+  return h("div", { class: "card ladder" }, rows.map((x, i) => lrow(i + 1, x.doc.r, x.name, x.doc.rush.at ? `on ${x.doc.rush.at}` : "", x.doc.rush.best, x.me, false)));
+}
+
+// ---- LADDER --------------------------------------------------------------------------------------------------------------
+let NAMES = {};
+function allPlayers() {
+  const list = Object.entries(others).filter(([id]) => id !== UID).map(([id, doc]) => ({ id, doc, name: NAMES[id] || "Someone", me: false }));
+  list.push({ id: UID || "me", doc: P, name: "You", me: true });
+  return list;
+}
+function lrow(pos, r, name, sub, score, me, ghost) {
+  return h("div", { class: "lrow" + (me ? " me" : "") + (ghost ? " gh" : "") }, h("span", { class: "pos", text: pos }), emblem(r, 30),
+    h("span", { class: "who" }, name, h("small", { text: sub })), h("span", { class: "score", text: score }));
+}
+function renderLadder() {
+  const d = today(), rows = allPlayers().map((x) => ({ r: x.doc.r, name: x.name, sub: `${tierOf(x.doc.r).name} ${tierOf(x.doc.r).div} · ${x.doc.solved} solved`, me: x.me, ghost: false }));
+  const at = (k) => { let r = null; for (const [day, v] of P.hist) if (day <= k) r = v; return r; };
+  const g7 = at(addDays(d, -7)), g30 = at(addDays(d, -30)), peak = P.hist.reduce((m, x) => Math.max(m, x[1]), 0);
+  if (g7 != null) rows.push({ r: g7, name: "You, 7 days ago", sub: "ghost", ghost: true });
+  if (g30 != null && g30 !== g7) rows.push({ r: g30, name: "You, 30 days ago", sub: "ghost", ghost: true });
+  if (peak > Math.round(P.r) + 5) rows.push({ r: peak, name: "You at your peak", sub: "ghost", ghost: true });
+  rows.push({ r: 1000, name: "Starting line", sub: "everyone begins at 1000", ghost: true });
+  rows.sort((a, b) => b.r - a.r);
+  const wk = weekId(d), weeks = Object.entries(P.wk).filter(([k]) => k !== wk).sort().slice(-4);
+  const league = allPlayers().map((x) => ({ name: x.name, xp: (x.doc.wk && x.doc.wk[wk]) || 0, me: x.me, ghost: false, r: x.doc.r }));
+  for (const [k, xp] of weeks) league.push({ name: `You, week ${k.split("-W")[1]}`, xp, ghost: true, r: P.r });
+  league.sort((a, b) => b.xp - a.xp);
+  const solo = Object.keys(others).filter((id) => id !== UID).length === 0;
+  return [
+    h("h2", { text: "Rating ladder" }),
+    h("div", { class: "card ladder" }, rows.map((x, i) => lrow(i + 1, x.r, x.name, x.sub, Math.round(x.r), x.me, x.ghost))),
+    h("h2", { text: `Weekly league · ${wk}` }),
+    h("div", { class: "card ladder" }, league.map((x, i) => lrow(i + 1, x.r, x.name, x.ghost ? "ghost week" : "this week", `${x.xp} XP`, x.me, x.ghost))),
+    h("p", { class: "note", text: solo ? "Right now you race your own ghosts. Share this page with a friend: everyone who opens it gets a rating and appears on this ladder." :
+      "Everyone who opens this page shares the same puzzles and the same rating system." }),
+  ];
+}
+
+// ---- STATS ---------------------------------------------------------------------------------------------------------------
+function renderStats() {
+  const pts = [...P.hist]; if (!pts.length) pts.push([today(), Math.round(P.r)]);
+  const W = 640, H = 150, lo = Math.min(...pts.map((x) => x[1]), 900) - 30, hi = Math.max(...pts.map((x) => x[1]), 1100) + 30;
+  const x0 = dayNum(pts[0][0]), x1 = Math.max(x0 + 6, dayNum(pts[pts.length - 1][0]));
+  const X = (dd) => 40 + ((dayNum(dd) - x0) / (x1 - x0)) * (W - 56), Y = (r) => 10 + (1 - (r - lo) / (hi - lo)) * (H - 30);
+  const svg = s("svg", { class: "chart", viewBox: `0 0 ${W} ${H}`, role: "img", "aria-label": "Rating over time" });
+  for (const [name, at] of TIERS) if (at > lo && at < hi) { svg.append(s("line", { x1: 40, x2: W - 10, y1: Y(at), y2: Y(at), stroke: "var(--line)", "stroke-dasharray": "3 4" }),
+    s("text", { x: 36, y: Y(at) + 4, "text-anchor": "end", "font-size": 10, fill: "var(--muted)", "font-family": "IBM Plex Mono, monospace" }, String(at)),
+    s("text", { x: 44, y: Y(at) - 4, "font-size": 10, fill: "var(--muted)", "font-family": "IBM Plex Mono, monospace" }, name)); }
+  const path = pts.map((p2, i) => `${i ? "L" : "M"}${X(p2[0]).toFixed(1)},${Y(p2[1]).toFixed(1)}`).join(" ");
+  if (pts.length > 1) svg.append(s("path", { d: `${path} L${X(pts[pts.length - 1][0])},${H - 20} L${X(pts[0][0])},${H - 20} Z`, fill: "var(--gold-soft)", opacity: 0.6 }));
+  svg.append(s("path", { d: path, fill: "none", stroke: "var(--gold)", "stroke-width": 2.5, "stroke-linejoin": "round" }));
+  const lp = pts[pts.length - 1]; svg.append(s("circle", { cx: X(lp[0]), cy: Y(lp[1]), r: 4.5, fill: "var(--gold)" }));
+  const byLab = {};
+  for (const [k, c] of Object.entries(META.concepts)) (byLab[c.lab] = byLab[c.lab] || []).push(k);
+  const conceptRows = [];
+  for (const lab of Object.keys(byLab).sort((a, b) => a - b)) {
+    conceptRows.push(h("div", { class: "muted", style: "font:600 11px var(--display);letter-spacing:.1em;text-transform:uppercase;margin-top:10px", text: `Lab ${lab} · ${labName(+lab)}` }));
+    for (const k of byLab[lab]) {
+      const cc = P.cc[k] || [0, 0], acc = cc[0] ? cc[1] / cc[0] : 0, due = P.cards[k] && P.cards[k][1] <= dayNum(today());
+      conceptRows.push(h("div", { class: "concept" },
+        h("span", {}, META.concepts[k].name, due ? h("span", { class: "tag gold", style: "margin-left:6px", text: "review" }) : null),
+        h("div", { class: "progress", title: `${Math.round(acc * 100)}% right` }, h("i", { style: `width:${Math.round(acc * 100)}%;background:${acc >= 0.8 ? "var(--good)" : acc >= 0.5 ? "var(--gold)" : "var(--bad)"}` })),
+        h("span", { class: "num muted", style: "font-size:13px;text-align:right", text: cc[0] ? `${cc[1]}/${cc[0]}` : "–" }),
+        h("button", { class: "link", onclick: () => startSession(k) }, "drill")));
+    }
+  }
+  const weak = Object.entries(P.cc).filter(([, v]) => v[0] >= 3).sort((a, b) => a[1][1] / a[1][0] - b[1][1] / b[1][0]).slice(0, 3);
+  return [
+    h("h2", { text: "Rating" }),
+    h("div", { class: "card wrap-x" }, svg),
+    h("div", { class: "hud" },
+      h("div", {}, h("small", { text: "Accuracy" }), h("b", { text: P.tried ? `${Math.round(100 * P.solved / P.tried)}%` : "–" })),
+      h("div", {}, h("small", { text: "Total XP" }), h("b", { text: P.xp })),
+      h("div", {}, h("small", { text: "Peak" }), h("b", { text: P.hist.reduce((m, x) => Math.max(m, x[1]), Math.round(P.r)) })),
+      h("div", {}, h("small", { text: "Sessions" }), h("b", { text: P.sess.length }))),
+    weak.length ? h("p", { class: "note", text: "Weakest right now: " + weak.map(([k, v]) => `${META.concepts[k].name} (${v[1]}/${v[0]})`).join(", ") + ". Tap drill to train one." }) : null,
+    h("h2", { text: "Concepts" }),
+    h("div", { class: "card" }, conceptRows),
+    h("div", { class: "row" }, h("button", { class: "link", onclick: (e) => { muted = !muted; try { localStorage.setItem("c6tactics.mute", muted ? "1" : "0"); } catch {} e.currentTarget.textContent = muted ? "Sound: off" : "Sound: on"; } }, muted ? "Sound: off" : "Sound: on"),
+      h("span", { class: "note grow", text: DB && UID ? "Saved to your account: same progress on every device." : "Offline mode: progress stays in this browser." })),
+  ];
+}
+
+// ---- render + keys ---------------------------------------------------------------------------------------------------------
+function render() {
+  if (!P) return;
+  const v = view();
+  const content = v === "rush" ? renderRush() : v === "ladder" ? renderLadder() : v === "stats" ? renderStats() : (SESS ? renderSession() : renderHome());
+  $("#app").replaceChildren(...[content].flat().filter(Boolean));
+  renderHeader();
+  if (v === "ladder" && USER) resolveNames();
+}
+async function resolveNames() {
+  const ids = Object.keys(others).filter((id) => id !== UID); if (!ids.length) return;
+  try { const ps = await USER.profiles(ids); let changed = false; for (const id of ids) { const n = ps[id] && ps[id].name || "Someone"; if (NAMES[id] !== n) { NAMES[id] = n; changed = true; } } if (changed && view() === "ladder") render(); } catch {}
+}
+window.addEventListener("hashchange", render);
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  const S = view() === "rush" ? RUSH : SESS; if (!S || S.done || !S.cur) return;
+  if (/^[1-4]$/.test(e.key) && !S.cur.answered) { const b = document.querySelector(`.choice[data-k="${e.key}"]`); if (b) b.click(); }
+  else if (e.key === "Enter" && S.cur.answered) { const b = $("#nextBtn"); if (b) b.click(); }
+});
+
+// ---- boot -----------------------------------------------------------------------------------------------------------------
+async function boot() {
+  try { const res = await fetch("puzzles.json"); const data = await res.json(); PZ = data.puzzles; META = data.meta; }
+  catch { $("#app").replaceChildren(h("div", { class: "card" }, h("p", { class: "q", text: "The puzzle pack didn't load. Reload the page to try again." }))); return; }
+  for (const p of PZ) BYID[p.id] = p;
+  try { const loc = JSON.parse(localStorage.getItem(LS) || "null"); if (loc && loc.v === 1) P = loc; } catch {}
+  P = P || newPlayer();
+  render();
+  timerId = setInterval(tick, 500);
+  const use = window.claude && window.claude.use ? (n) => window.claude.use(n).catch(() => null) : async () => null;
+  const [db, user, sample] = await Promise.all([use("db"), use("user"), use("sample")]);
+  USER = user; SAMPLE = sample;
+  if (db && user) {
+    const id = await user.id();
+    if (id) {
+      DB = db; UID = id;
+      try { const c = await db.doc("course/current").get(); if (c.exists && c.data().lab) LAB = c.data().lab; } catch {}
+      try {
+        const mine = await db.doc("players/" + id).get();
+        if (mine.exists) { const doc = mine.data(); if (!P.upd || (doc.upd || 0) >= P.upd || P.tried === 0) P = JSON.parse(JSON.stringify(doc)); else save(); }
+        else save();
+      } catch (e) { console.warn(e); }
+      db.collection("players").onSnapshot((snap) => { others = {}; for (const d of snap.docs) if (d.exists) others[d.id] = d.data(); if (view() === "ladder" || (view() === "rush" && !RUSH)) render(); }, () => {});
+    }
+  }
+  render();
+}
+boot();
+</script>

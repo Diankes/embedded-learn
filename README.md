@@ -17,6 +17,15 @@ from the TRM → run the smallest example → peel it (example → driver → LL
 → watch it run. Plus: what menuconfig / the VS Code "SDK Configuration Editor" / `sdkconfig` really are, traced
 through your own Lab 00.
 
+## The arena: C6 Tactics (15 minutes a day)
+
+**[Play](https://claude.ai/artifact/8dUXVEb9t4pkxkrWdPCsBg)** (phone or laptop). Rated puzzles like chess tactics:
+predict a register, decode a machine word, pick GCC's listing, name a peripheral by its address. Every puzzle has a
+rating and so do you (Glicko-2); climb from Bit to Silicon. Each 15-minute session races a ghost of your best one;
+Puzzle Rush is 5 minutes, 3 strikes; the ladder shows you against your past selves (and friends, if you share the
+page). Every answer comes from the real ESP toolchain (assembler, QEMU, GCC) or ESP-IDF's headers: see
+[arena/](arena/). Ask Claude "how am I doing in the arena?"; it reads your stats and adds puzzles as you finish labs.
+
 ## How every lab works (the nand2tetris loop)
 
 | nand2tetris | here |
